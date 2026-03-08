@@ -30,77 +30,6 @@
   .nav-links a { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); text-decoration: none; cursor: pointer; transition: color 0.2s; padding-bottom: 3px; border-bottom: 2px solid transparent; }
   .nav-links a:hover, .nav-links a.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-  /* MOBILE MENU TOGGLE */
-  .mobile-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--gold);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
-
-  /* MOBILE MENU OVERLAY */
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 52px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--ink);
-    z-index: 99;
-    overflow-y: auto;
-    padding: 2rem;
-  }
-
-  .mobile-menu.active {
-    display: block;
-  }
-
-  .mobile-menu-section {
-    margin-bottom: 2rem;
-  }
-
-  .mobile-menu-header {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(212, 160, 23, 0.3);
-  }
-
-  .mobile-menu-links {
-    list-style: none;
-  }
-
-  .mobile-menu-links li {
-    margin-bottom: 0.8rem;
-  }
-
-  .mobile-menu-links a {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: rgba(255,255,255,0.8);
-    text-decoration: none;
-    display: block;
-    padding: 0.5rem 0;
-    transition: color 0.2s;
-  }
-
-  .mobile-menu-links a:hover,
-  .mobile-menu-links a.active {
-    color: var(--gold);
-  }
-
   /* MASTHEAD */
   .masthead { background: var(--cream); border-bottom: 4px double var(--ink); text-align: center; padding: 2.5rem 1rem 1.8rem; }
   .masthead-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.35em; text-transform: uppercase; color: var(--red); margin-bottom: 0.6rem; }
@@ -183,9 +112,6 @@
     .hero { grid-template-columns: 1fr; }
     .hero-sidebar { border-left: none; border-top: 2px solid var(--ink); padding-left: 0; padding-top: 1.5rem; }
     .nav-links { display: none; }
-    .mobile-toggle { display: block; }
-    nav { padding: 0 1.5rem; }
-    .container { padding: 0 1rem; }
   }
 </style>
 </head>
@@ -199,36 +125,12 @@
 ============================================================ -->
 <nav>
   <a href="index.html" class="nav-logo">BSL Media</a>
-  <button class="mobile-toggle" id="mobileToggle">☰</button>
   <ul class="nav-links">
     <li><a class="active" data-section="home">Home</a></li>
     <li><a data-section="news">News</a></li>
     <li><a data-section="scouting">Scouting</a></li>
   </ul>
 </nav>
-
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <div class="mobile-menu-section">
-    <div class="mobile-menu-header">Navigate</div>
-    <ul class="mobile-menu-links">
-      <li><a class="active" data-section="home">Home</a></li>
-      <li><a data-section="news">All News</a></li>
-      <li><a data-section="scouting">Scouting Reports</a></li>
-    </ul>
-  </div>
-  
-  <div class="mobile-menu-section">
-    <div class="mobile-menu-header">Recent Articles</div>
-    <ul class="mobile-menu-links">
-      <li><a href="500_win_club_rankings.html">The 500-Win Club</a></li>
-      <li><a href="divisions_editorial.html">The Case for Divisions</a></li>
-      <li><a href="orlando_magic_playoff_preview.html">Magic Playoff Preview</a></li>
-      <li><a href="haliburton_rookie_report.html">Haliburton Rookie Report</a></li>
-      <li><a href="hornets_duren_trade.html">Hornets Trade for Duren</a></li>
-    </ul>
-  </div>
-</div>
 
 <!-- MASTHEAD -->
 <div class="masthead">
@@ -482,48 +384,12 @@
   the matching <div id="..."> when clicked.
 ============================================================ -->
 <script>
-  // ══════════════════════════════════════════════════════════════
-  // MOBILE MENU TOGGLE
-  // ══════════════════════════════════════════════════════════════
-  const mobileToggle = document.getElementById('mobileToggle');
-  const mobileMenu = document.getElementById('mobileMenu');
-
-  mobileToggle.addEventListener('click', () => {
-    mobileMenu.classList.toggle('active');
-    mobileToggle.textContent = mobileMenu.classList.contains('active') ? '✕' : '☰';
-  });
-
-  // Close mobile menu when clicking a link
-  const mobileMenuLinks = document.querySelectorAll('.mobile-menu-links a');
-  mobileMenuLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('active');
-      mobileToggle.textContent = '☰';
-    });
-  });
-
-  // ══════════════════════════════════════════════════════════════
-  // SECTION NAVIGATION
-  // ══════════════════════════════════════════════════════════════
   const navLinks = document.querySelectorAll('.nav-links a[data-section]');
   const sections = document.querySelectorAll('.page-section');
 
   navLinks.forEach(link => {
     link.addEventListener('click', () => {
       navLinks.forEach(l => l.classList.remove('active'));
-      sections.forEach(s => s.classList.remove('active'));
-      link.classList.add('active');
-      document.getElementById(link.getAttribute('data-section')).classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-  });
-
-  // Mobile menu section navigation
-  const mobileNavLinks = document.querySelectorAll('.mobile-menu-links a[data-section]');
-  mobileNavLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      navLinks.forEach(l => l.classList.remove('active'));
-      mobileNavLinks.forEach(l => l.classList.remove('active'));
       sections.forEach(s => s.classList.remove('active'));
       link.classList.add('active');
       document.getElementById(link.getAttribute('data-section')).classList.add('active');
