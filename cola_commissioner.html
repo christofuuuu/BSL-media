@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLA Commissioner Tool</title>
+  <style>
+    :root {
+      --ink: #171717;
+      --panel: #ffffff;
+      --paper: #f5f2ea;
+      --line: #d8d0c2;
+      --muted: #6f685d;
+      --gold: #c59629;
+      --red: #b63f32;
+      --green: #26745e;
+      --blue: #315e86;
+      --shadow: 0 12px 30px rgba(23, 23, 23, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.4;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      min-height: 38px;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+
+    button:hover { filter: brightness(1.08); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .ghost {
+      background: transparent;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .danger { background: var(--red); border-color: var(--red); }
+    .good { background: var(--green); border-color: var(--green); }
+    .blue { background: var(--blue); border-color: var(--blue); }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 0.48rem 0.55rem;
+    }
+
+    input[type="checkbox"] {
+      width: 17px;
+      min-height: 17px;
+      accent-color: var(--ink);
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.32rem;
+    }
+
+    header {
+      background: var(--ink);
+      color: #fff;
+      border-bottom: 4px solid var(--gold);
+      padding: 1.2rem clamp(1rem, 4vw, 2rem);
+    }
+
+    .header-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1, h2, h3 { margin: 0; }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle { margin-top: 0.35rem; color: rgba(255,255,255,0.72); max-width: 760px; }
+
+    .status-pills {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      min-height: 30px;
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.86);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 12px rgba(23, 23, 23, 0.05);
+    }
+
+    .tabs {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tab-button {
+      min-height: 48px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      background: #fff;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .tab-button.active {
+      color: var(--ink);
+      background: #fdfbf6;
+      box-shadow: inset 0 -4px 0 var(--gold);
+    }
+
+    main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 1.25rem clamp(0.75rem, 2.5vw, 2rem) 2.5rem;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .band {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .band-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.8rem;
+    }
+
+    .band-header p { margin: 0.2rem 0 0; color: var(--muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 0.8rem;
+    }
+
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.7rem;
+    }
+
+    .team-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.7rem;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 0.45rem;
+    }
+
+    .team-name {
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .hint { color: var(--muted); font-size: 0.9rem; }
+    .small { font-size: 0.84rem; color: var(--muted); }
+
+    .history-layout {
+      display: grid;
+      grid-template-columns: minmax(230px, 280px) 1fr;
+      gap: 1rem;
+    }
+
+    .season-list {
+      display: grid;
+      gap: 0.45rem;
+      max-height: 540px;
+      overflow: auto;
+      padding-right: 0.25rem;
+    }
+
+    .season-button {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.7rem;
+      width: 100%;
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+      text-align: left;
+    }
+
+    .season-button.active {
+      border-color: var(--gold);
+      box-shadow: inset 4px 0 0 var(--gold);
+    }
+
+    .finish-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.55rem;
+    }
+
+    .finish-row {
+      display: grid;
+      grid-template-columns: 1fr 125px;
+      gap: 0.45rem;
+      align-items: end;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.55rem;
+      background: #fff;
+    }
+
+    .finish-row strong { overflow-wrap: anywhere; }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 0.62rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8f4eb;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    tbody tr:hover { background: #fbf8f1; }
+
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 0.18rem 0.45rem;
+      border-radius: 999px;
+      background: #eee7dc;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .badge.green { background: #dcece6; color: #185b47; }
+    .badge.red { background: #f0d9d5; color: #8a2c22; }
+    .badge.gold { background: #f3e5bf; color: #74500c; }
+    .badge.blue { background: #dce7f0; color: #214864; }
+
+    .lottery-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .pick-card {
+      min-height: 126px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .pick-card.revealing {
+      animation: pulse 0.8s ease-in-out infinite alternate;
+      border-color: var(--gold);
+    }
+
+    @keyframes pulse {
+      from { transform: translateY(0); box-shadow: 0 0 0 rgba(197,150,41,0); }
+      to { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(197,150,41,0.22); }
+    }
+
+    .pick-number {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .pick-team {
+      font-size: 1.25rem;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      background: #fff9e8;
+      color: #5c4514;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin: 0.8rem 0;
+    }
+
+    .toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 50;
+      display: none;
+      max-width: min(420px, calc(100vw - 2rem));
+      background: var(--ink);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show { display: block; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 860px) {
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+      .history-layout { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .col-3, .col-4, .col-6, .col-8, .col-12 { grid-column: auto; }
+      .finish-row { grid-template-columns: 1fr; }
+      table { min-width: 760px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>COLA Commissioner Tool</h1>
+        <div class="subtitle">Single-file lottery management for setup, season updates, strong and weak class handling, lottery night, and JSON backups.</div>
+      </div>
+      <div class="status-pills" id="statusPills"></div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="tabs" id="tabs">
+      <button class="tab-button active" data-view="setupView">Setup</button>
+      <button class="tab-button" data-view="seasonView">Season</button>
+      <button class="tab-button" data-view="lotteryView">Lottery</button>
+      <button class="tab-button" data-view="tableView">League Table</button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="view active" id="setupView">
+      <div class="band">
+        <div class="band-header">
+          <div>
+            <h2>League Setup</h2>
+            <p>Enter 32 teams and divisions, then optionally walk through 13 historical seasons to calculate the current index.</p>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="seedTeamsBtn">Seed NBA Names</button>
+            <button class="good" id="saveTeamsBtn">Save League</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="col-3">
+            <label for="startSeason">Starting season</label>
+            <input id="startSeason" type="number" min="1" step="1" value="1">
+          </div>
+          <div class="col-3">
+            <label for="currentSeason">Current season</label>
+            <input id="currentSeason" type="number" min="1" step="1" value="14">
+          </div>
+          <div class="col-6">
+            <label for="historyCount">Historical seasons to import</label>
+            <input id="historyCount" type="number" min="0" max="60" step="1" value="13">
+          </div>
+        </div>
+        <div class="notice">Saving league setup replaces the team list but preserves matching team IDs where possible. Export a backup before major edits.</div>
+        <div class="teams-grid" id="setupTeams"></div>
+      </div>
+
+      <div class="band" id="historyBand">
+        <div class="band-header">
+          <div>
+            <h2>Import History</h2>
+            <p>For each historical season, mark playoff finish and picks 1-4. The preview recalculates as you go.</p>
+          </div>
+          <div class="actions">
+            <button class="blue" id="rebuildHistoryBtn">Build Season Forms</button>
+            <button class="good" id="applyHistoryBtn">Apply History</button>
+          </div>
+        </div>
+        <div class="history-layout">
+          <div class="season-list" id="historySeasonList"></div>
+          <div id="historyEditor"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="seasonView">
+      <div class="band">
+        <div class="band-header">
+          <div>
+            <h2>Season Management</h2>
+            <p>Record the current playoff finish and apply COLA increments and playoff diminishments.</p>
+          </div>
+          <div class="actions">
+            <button class="good" id="applySeasonBtn">Apply Season Update</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="col-4">
+            <label for="seasonNumberInput">Season number</label>
+            <input id="seasonNumberInput" type="number" min="1" step="1">
+          </div>
+          <div class="col-4">
+            <label for="surveyInput">Strong class survey result</label>
+            <select id="surveyInput"></select>
+          </div>
+          <div class="col-4">
+            <label>Lottery increment policy</label>
+            <div class="notice" id="incrementPolicyText"></div>
+          </div>
+        </div>
+        <div class="finish-grid" id="seasonFinishGrid"></div>
+      </div>
+    </section>
+
+    <section class="view" id="lotteryView">
+      <div class="band">
+        <div class="band-header">
+          <div>
+            <h2>Draft Lottery Draw</h2>
+            <p>Configure opt-outs and traded picks, then run picks 1-4 live from the weighted index pool.</p>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="resetLotteryBtn">Reset Draw</button>
+            <button class="good" id="runLotteryBtn">Run Lottery</button>
+          </div>
+        </div>
+        <div class="notice" id="lotteryNotice"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Original Team</th>
+                <th>Pick Holder</th>
+                <th class="num">Current Index</th>
+                <th class="num">Draw Tickets</th>
+                <th class="num">Pick 1 Odds</th>
+                <th>Weak Opt Out</th>
+                <th>Traded Pick</th>
+              </tr>
+            </thead>
+            <tbody id="lotteryConfigBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="band">
+        <div class="band-header">
+          <div>
+            <h2>Lottery Reveal</h2>
+            <p>Top four are drawn. Picks 5-16 are sorted by remaining index rank.</p>
+          </div>
+        </div>
+        <div class="lottery-board" id="lotteryBoard"></div>
+      </div>
+    </section>
+
+    <section class="view" id="tableView">
+      <div class="band">
+        <div class="band-header">
+          <div>
+            <h2>League Table</h2>
+            <p>Sortable current index, live odds, playoff history, top picks, and trade status.</p>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="exportBtn">Export JSON</button>
+            <label class="ghost" style="display:inline-flex;align-items:center;min-height:38px;padding:0.55rem 0.85rem;border:1px solid var(--line);border-radius:6px;margin:0;cursor:pointer;color:var(--ink);text-transform:none;letter-spacing:0;background:#fff;">
+              Import JSON
+              <input id="importInput" type="file" accept="application/json,.json" class="hidden">
+            </label>
+            <button class="danger" id="resetAppBtn">Reset App</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="leagueTable">
+            <thead>
+              <tr>
+                <th data-sort="name">Team</th>
+                <th data-sort="division">Division</th>
+                <th data-sort="index" class="num">Index</th>
+                <th data-sort="odds" class="num">Odds Today</th>
+                <th data-sort="playoffs" class="num">Playoffs</th>
+                <th data-sort="topPicks" class="num">Top Picks</th>
+                <th data-sort="holder">Current Pick Holder</th>
+                <th data-sort="lastFinish">Last Finish</th>
+              </tr>
+            </thead>
+            <tbody id="leagueTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "bsl.colaCommissioner.v1";
+      var TEAM_COUNT = 32;
+      var HISTORY_DEFAULT = 13;
+      var INCREMENT = 1000;
+      var OPT_OUT_COST = 2000;
+      var FINISHES = [
+        { value: "missed", label: "Missed playoffs", playoff: false, order: 0 },
+        { value: "first", label: "Lost first round", playoff: true, order: 1 },
+        { value: "second", label: "Lost second round", playoff: true, order: 2 },
+        { value: "conf", label: "Lost conference finals", playoff: true, order: 3 },
+        { value: "finals", label: "Runner-up", playoff: true, order: 4 },
+        { value: "champion", label: "Champion", playoff: true, order: 5 }
+      ];
+      var SURVEY_OPTIONS = [
+        { value: 1, label: "1 - Normal non-playoff lottery", minOrder: 0, increment: true },
+        { value: 2, label: "2 - Include first-round losers", minOrder: 1, increment: true },
+        { value: 3, label: "3 - Include first- and second-round losers", minOrder: 2, increment: false },
+        { value: 4, label: "4 - Include conference-final losers or earlier", minOrder: 3, increment: false },
+        { value: 5, label: "5 - Include everyone except champion", minOrder: 4, increment: false },
+        { value: 6, label: "6 - Include every team", minOrder: 5, increment: false }
+      ];
+      var NBA_TEAMS = [
+        "Atlanta", "Boston", "Brooklyn", "Charlotte", "Chicago", "Cleveland", "Dallas", "Denver",
+        "Detroit", "Golden State", "Houston", "Indiana", "Los Angeles (LAC)", "Los Angeles (LAL)",
+        "Memphis", "Miami", "Milwaukee", "Minnesota", "New Orleans", "New York", "Oklahoma City",
+        "Orlando", "Philadelphia", "Phoenix", "Portland", "Sacramento", "San Antonio", "Toronto",
+        "Utah", "Washington", "Las Vegas", "Nashville"
+      ];
+
+      var state = loadState();
+      var activeHistorySeason = 0;
+      var tableSort = { key: "index", dir: "desc" };
+      var drawing = false;
+
+      var el = {
+        statusPills: byId("statusPills"),
+        setupTeams: byId("setupTeams"),
+        startSeason: byId("startSeason"),
+        currentSeason: byId("currentSeason"),
+        historyCount: byId("historyCount"),
+        historySeasonList: byId("historySeasonList"),
+        historyEditor: byId("historyEditor"),
+        seasonNumberInput: byId("seasonNumberInput"),
+        surveyInput: byId("surveyInput"),
+        incrementPolicyText: byId("incrementPolicyText"),
+        seasonFinishGrid: byId("seasonFinishGrid"),
+        lotteryNotice: byId("lotteryNotice"),
+        lotteryConfigBody: byId("lotteryConfigBody"),
+        lotteryBoard: byId("lotteryBoard"),
+        leagueTableBody: byId("leagueTableBody"),
+        toast: byId("toast")
+      };
+
+      init();
+
+      function init() {
+        bindEvents();
+        renderSurveyOptions();
+        ensureSetupRows();
+        ensureHistoryDrafts();
+        ensureSeasonDraft();
+        renderAll();
+        window.COLA_TESTS = {
+          run: runDevTests,
+          computeSeasonIndex: computeSeasonIndex,
+          computeIndexesFromSeasons: computeIndexesFromSeasons,
+          buildLotteryEntries: buildLotteryEntries,
+          drawLottery: drawLottery,
+          applyLotteryResults: applyLotteryResults,
+          cloneState: function () { return clone(state); }
+        };
+      }
+
+      function byId(id) { return document.getElementById(id); }
+      function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+      function makeDefaultState() {
+        return {
+          version: 1,
+          startSeason: 1,
+          currentSeason: 14,
+          teams: Array.from({ length: TEAM_COUNT }, function (_, i) {
+            return {
+              id: "team" + (i + 1),
+              name: "",
+              division: "",
+              index: 0,
+              history: [],
+              topPicks: [],
+              currentPickHolderId: "team" + (i + 1),
+              tradedPick: false
+            };
+          }),
+          seasons: [],
+          draftSeason: { season: 14, survey: 1, finishes: {}, topPicks: [] },
+          lottery: { season: 14, optOuts: {}, optOutPenalties: {}, results: [], completed: false }
+        };
+      }
+
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return makeDefaultState();
+          return normalizeState(JSON.parse(raw));
+        } catch (err) {
+          console.warn("Could not load COLA state", err);
+          return makeDefaultState();
+        }
+      }
+
+      function normalizeState(input) {
+        var next = Object.assign(makeDefaultState(), input || {});
+        next.teams = Array.isArray(input.teams) ? input.teams.slice(0, TEAM_COUNT) : next.teams;
+        while (next.teams.length < TEAM_COUNT) {
+          next.teams.push(makeDefaultState().teams[next.teams.length]);
+        }
+        next.teams = next.teams.map(function (team, i) {
+          var id = team.id || ("team" + (i + 1));
+          return Object.assign({
+            id: id,
+            name: "",
+            division: "",
+            index: 0,
+            history: [],
+            topPicks: [],
+            currentPickHolderId: id,
+            tradedPick: false
+          }, team, { id: id });
+        });
+        next.startSeason = toInt(next.startSeason, 1);
+        next.currentSeason = toInt(next.currentSeason, next.startSeason + HISTORY_DEFAULT);
+        next.seasons = Array.isArray(next.seasons) ? next.seasons : [];
+        next.draftSeason = next.draftSeason || { season: next.currentSeason, survey: 1, finishes: {}, topPicks: [] };
+        next.lottery = next.lottery || { season: next.currentSeason, optOuts: {}, optOutPenalties: {}, results: [], completed: false };
+        next.lottery.optOuts = next.lottery.optOuts || {};
+        next.lottery.optOutPenalties = next.lottery.optOutPenalties || {};
+        return next;
+      }
+
+      function saveState(showMessage) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (showMessage) toast(showMessage);
+      }
+
+      function bindEvents() {
+        byId("tabs").addEventListener("click", function (event) {
+          var btn = event.target.closest("button[data-view]");
+          if (!btn) return;
+          document.querySelectorAll(".tab-button").forEach(function (b) { b.classList.toggle("active", b === btn); });
+          document.querySelectorAll(".view").forEach(function (view) { view.classList.toggle("active", view.id === btn.dataset.view); });
+        });
+
+        byId("seedTeamsBtn").addEventListener("click", seedTeams);
+        byId("saveTeamsBtn").addEventListener("click", saveLeagueSetup);
+        byId("rebuildHistoryBtn").addEventListener("click", function () {
+          syncSetupInputs();
+          ensureHistoryDrafts(true);
+          renderHistory();
+          saveState("Season forms rebuilt.");
+        });
+        byId("applyHistoryBtn").addEventListener("click", applyHistory);
+        byId("applySeasonBtn").addEventListener("click", applyCurrentSeason);
+        byId("runLotteryBtn").addEventListener("click", runLotteryAnimation);
+        byId("resetLotteryBtn").addEventListener("click", resetLottery);
+        byId("exportBtn").addEventListener("click", exportJson);
+        byId("importInput").addEventListener("change", importJson);
+        byId("resetAppBtn").addEventListener("click", resetApp);
+        byId("leagueTable").querySelector("thead").addEventListener("click", sortTable);
+        el.surveyInput.addEventListener("change", function () {
+          state.draftSeason.survey = toInt(el.surveyInput.value, 1);
+          state.lottery.results = [];
+          state.lottery.completed = false;
+          saveState();
+          renderAll();
+        });
+      }
+
+      function renderAll() {
+        renderStatus();
+        renderSetup();
+        renderHistory();
+        renderSeason();
+        renderLottery();
+        renderLeagueTable();
+      }
+
+      function renderStatus() {
+        var named = state.teams.filter(function (t) { return t.name.trim(); }).length;
+        var eligible = buildLotteryEntries(state, { applyOptOuts: false }).filter(function (e) { return e.lotteryEligible; }).length;
+        el.statusPills.innerHTML = [
+          "<span class=\"pill\">Season " + escapeHtml(state.currentSeason) + "</span>",
+          "<span class=\"pill\">" + named + "/32 teams</span>",
+          "<span class=\"pill\">" + eligible + " lottery slots</span>",
+          "<span class=\"pill\">" + state.seasons.length + " saved seasons</span>"
+        ].join("");
+      }
+
+      function ensureSetupRows() {
+        if (!el.setupTeams.children.length) {
+          el.setupTeams.innerHTML = state.teams.map(function (_, i) {
+            return "<div class=\"team-card\">" +
+              "<label>Team " + (i + 1) + "</label>" +
+              "<div class=\"team-row\">" +
+              "<input data-team-name=\"" + i + "\" placeholder=\"Team name\">" +
+              "<input data-team-division=\"" + i + "\" placeholder=\"Division\">" +
+              "</div></div>";
+          }).join("");
+        }
+      }
+
+      function renderSetup() {
+        el.startSeason.value = state.startSeason;
+        el.currentSeason.value = state.currentSeason;
+        el.historyCount.value = Math.max(state.seasons.length || HISTORY_DEFAULT, 0);
+        state.teams.forEach(function (team, i) {
+          var nameInput = document.querySelector("[data-team-name=\"" + i + "\"]");
+          var divInput = document.querySelector("[data-team-division=\"" + i + "\"]");
+          if (nameInput && document.activeElement !== nameInput) nameInput.value = team.name;
+          if (divInput && document.activeElement !== divInput) divInput.value = team.division;
+        });
+      }
+
+      function seedTeams() {
+        NBA_TEAMS.forEach(function (name, i) {
+          var nameInput = document.querySelector("[data-team-name=\"" + i + "\"]");
+          var divInput = document.querySelector("[data-team-division=\"" + i + "\"]");
+          if (nameInput) nameInput.value = name;
+          if (divInput && !divInput.value) divInput.value = i < 16 ? "East" : "West";
+        });
+        toast("Team names seeded. Save League when ready.");
+      }
+
+      function syncSetupInputs() {
+        state.startSeason = toInt(el.startSeason.value, 1);
+        state.currentSeason = toInt(el.currentSeason.value, state.startSeason);
+        state.teams.forEach(function (team, i) {
+          var nameInput = document.querySelector("[data-team-name=\"" + i + "\"]");
+          var divInput = document.querySelector("[data-team-division=\"" + i + "\"]");
+          team.name = nameInput ? nameInput.value.trim() : team.name;
+          team.division = divInput ? divInput.value.trim() : team.division;
+          if (!team.currentPickHolderId) team.currentPickHolderId = team.id;
+        });
+      }
+
+      function saveLeagueSetup() {
+        syncSetupInputs();
+        ensureHistoryDrafts(true);
+        ensureSeasonDraft();
+        saveState("League setup saved.");
+        renderAll();
+      }
+
+      function ensureHistoryDrafts(forceCount) {
+        var count = Math.max(0, toInt(el.historyCount ? el.historyCount.value : HISTORY_DEFAULT, HISTORY_DEFAULT));
+        if (!forceCount && state.seasons.length) return;
+        var oldBySeason = {};
+        state.seasons.forEach(function (season) { oldBySeason[season.season] = season; });
+        state.seasons = Array.from({ length: count }, function (_, i) {
+          var seasonNo = state.startSeason + i;
+          return normalizeSeason(oldBySeason[seasonNo] || { season: seasonNo, survey: 1, finishes: {}, topPicks: [] });
+        });
+        if (activeHistorySeason >= state.seasons.length) activeHistorySeason = Math.max(0, state.seasons.length - 1);
+      }
+
+      function normalizeSeason(season) {
+        season.finishes = season.finishes || {};
+        season.topPicks = Array.isArray(season.topPicks) ? season.topPicks.slice(0, 4) : [];
+        season.survey = toInt(season.survey, 1);
+        state.teams.forEach(function (team) {
+          if (!season.finishes[team.id]) season.finishes[team.id] = "missed";
+        });
+        return season;
+      }
+
+      function renderHistory() {
+        if (!state.seasons.length) {
+          el.historySeasonList.innerHTML = "<div class=\"notice\">No historical seasons configured.</div>";
+          el.historyEditor.innerHTML = "";
+          return;
+        }
+        el.historySeasonList.innerHTML = state.seasons.map(function (season, i) {
+          var complete = countPlayoffTeams(season) === 16 ? "<span class=\"badge green\">16 playoff teams</span>" : "<span class=\"badge red\">" + countPlayoffTeams(season) + "/16</span>";
+          return "<button class=\"season-button " + (i === activeHistorySeason ? "active" : "") + "\" data-history-index=\"" + i + "\"><span>Season " + season.season + "</span>" + complete + "</button>";
+        }).join("");
+        el.historySeasonList.querySelectorAll("[data-history-index]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            activeHistorySeason = toInt(btn.dataset.historyIndex, 0);
+            renderHistory();
+          });
+        });
+        renderHistoryEditor();
+      }
+
+      function renderHistoryEditor() {
+        var season = state.seasons[activeHistorySeason];
+        if (!season) return;
+        var preview = computeIndexesFromSeasons(state.teams, state.seasons.slice(0, activeHistorySeason + 1));
+        el.historyEditor.innerHTML =
+          "<div class=\"band\" style=\"box-shadow:none;margin:0;\">" +
+          "<div class=\"band-header\"><div><h3>Season " + season.season + "</h3><p>Set playoff finish and top-four lottery winners.</p></div></div>" +
+          "<div class=\"grid\"><div class=\"col-6\"><label>Strong class survey result</label><select id=\"historySurvey\">" + surveyOptionsHtml(season.survey) + "</select></div>" +
+          [1,2,3,4].map(function (pick) {
+            return "<div class=\"col-3\"><label>Pick " + pick + " winner</label><select data-history-pick=\"" + pick + "\">" + teamOptionsHtml(season.topPicks[pick - 1] || "") + "</select></div>";
+          }).join("") +
+          "</div><div class=\"finish-grid\" style=\"margin-top:0.8rem;\">" + finishRowsHtml(season.finishes, "history") + "</div>" +
+          "<div class=\"table-wrap\" style=\"margin-top:0.8rem;\"><table><thead><tr><th>Team</th><th class=\"num\">Preview Index</th></tr></thead><tbody>" +
+          state.teams.map(function (team) {
+            return "<tr><td>" + teamLabel(team) + "</td><td class=\"num\">" + formatInt(preview[team.id] || 0) + "</td></tr>";
+          }).join("") + "</tbody></table></div></div>";
+
+        byId("historySurvey").addEventListener("change", function () {
+          season.survey = toInt(this.value, 1);
+          saveState();
+          renderHistory();
+        });
+        el.historyEditor.querySelectorAll("[data-history-pick]").forEach(function (select) {
+          select.addEventListener("change", function () {
+            season.topPicks[toInt(select.dataset.historyPick, 1) - 1] = select.value;
+            saveState();
+            renderHistory();
+          });
+        });
+        bindFinishInputs(el.historyEditor, season.finishes, function () {
+          saveState();
+          renderHistory();
+        });
+      }
+
+      function applyHistory() {
+        syncHistoryEditor();
+        var indexes = computeIndexesFromSeasons(state.teams, state.seasons);
+        state.teams.forEach(function (team) {
+          team.index = indexes[team.id] || 0;
+          team.history = [];
+          team.topPicks = [];
+        });
+        state.seasons.forEach(function (season) {
+          state.teams.forEach(function (team) {
+            var finish = season.finishes[team.id] || "missed";
+            if (finish !== "missed") team.history.push({ season: season.season, finish: finish });
+          });
+          season.topPicks.forEach(function (teamId, pickIndex) {
+            var team = findTeam(teamId);
+            if (team) team.topPicks.push({ season: season.season, pick: pickIndex + 1 });
+          });
+        });
+        state.currentSeason = state.startSeason + state.seasons.length;
+        state.draftSeason = { season: state.currentSeason, survey: 1, finishes: buildDefaultFinishes(), topPicks: [] };
+        state.lottery = { season: state.currentSeason, optOuts: {}, optOutPenalties: {}, results: [], completed: false };
+        saveState("Historical seasons applied.");
+        renderAll();
+      }
+
+      function syncHistoryEditor() {
+        var season = state.seasons[activeHistorySeason];
+        if (!season) return;
+        var survey = byId("historySurvey");
+        if (survey) season.survey = toInt(survey.value, 1);
+        document.querySelectorAll("[data-history-pick]").forEach(function (select) {
+          season.topPicks[toInt(select.dataset.historyPick, 1) - 1] = select.value;
+        });
+        document.querySelectorAll("[data-finish-team]").forEach(function (select) {
+          if (select.dataset.context === "history") season.finishes[select.dataset.finishTeam] = select.value;
+        });
+      }
+
+      function ensureSeasonDraft() {
+        if (!state.draftSeason || !state.draftSeason.finishes) {
+          state.draftSeason = { season: state.currentSeason, survey: 1, finishes: buildDefaultFinishes(), topPicks: [] };
+        }
+        state.draftSeason = normalizeSeason(state.draftSeason);
+        state.draftSeason.season = toInt(state.draftSeason.season, state.currentSeason);
+      }
+
+      function renderSurveyOptions() {
+        el.surveyInput.innerHTML = surveyOptionsHtml(state.draftSeason ? state.draftSeason.survey : 1);
+      }
+
+      function renderSeason() {
+        ensureSeasonDraft();
+        el.seasonNumberInput.value = state.draftSeason.season;
+        el.surveyInput.value = state.draftSeason.survey;
+        var rule = surveyRule(state.draftSeason.survey);
+        el.incrementPolicyText.textContent = rule.increment ? "Lottery-line teams receive +1,000 this season." : "No teams receive +1,000 this season.";
+        el.seasonFinishGrid.innerHTML = finishRowsHtml(state.draftSeason.finishes, "season");
+        bindFinishInputs(el.seasonFinishGrid, state.draftSeason.finishes, function () {
+          saveState();
+          renderAll();
+        });
+        el.seasonNumberInput.onchange = function () {
+          state.draftSeason.season = toInt(el.seasonNumberInput.value, state.currentSeason);
+          state.currentSeason = state.draftSeason.season;
+          state.lottery.season = state.currentSeason;
+          saveState();
+          renderAll();
+        };
+      }
+
+      function applyCurrentSeason() {
+        ensureSeasonDraft();
+        var playoffCount = countPlayoffTeams(state.draftSeason);
+        if (playoffCount !== 16 && !confirm("This season has " + playoffCount + " playoff teams, not 16. Apply anyway?")) return;
+        state.draftSeason.survey = toInt(el.surveyInput.value, 1);
+        state.teams.forEach(function (team) {
+          team.index = computeSeasonIndex(team.index, team.id, state.draftSeason);
+          var finish = state.draftSeason.finishes[team.id] || "missed";
+          if (finish !== "missed") team.history.push({ season: state.draftSeason.season, finish: finish });
+        });
+        state.seasons.push(clone(state.draftSeason));
+        state.currentSeason = state.draftSeason.season + 1;
+        state.draftSeason = { season: state.currentSeason, survey: 1, finishes: buildDefaultFinishes(), topPicks: [] };
+        state.lottery = { season: state.currentSeason, optOuts: {}, optOutPenalties: {}, results: [], completed: false };
+        saveState("Season update applied.");
+        renderAll();
+      }
+
+      function renderLottery() {
+        var entries = buildLotteryEntries(state, { applyOptOuts: true });
+        var drawPool = entries.filter(function (e) { return e.drawEligible; });
+        var total = drawPool.reduce(function (sum, e) { return sum + e.drawTickets; }, 0);
+        var locked = !!state.lottery.completed;
+        el.lotteryNotice.textContent = entries.length + " lottery-slot teams. " + drawPool.length + " can win picks 1-4. Current draw pool: " + formatInt(total) + " tickets.";
+        el.lotteryConfigBody.innerHTML = entries.map(function (entry) {
+          var holderOptions = teamOptionsHtml(entry.holderId);
+          var odds = total > 0 && entry.drawEligible ? (entry.drawTickets / total * 100) : 0;
+          return "<tr>" +
+            "<td><strong>" + teamLabel(entry.team) + "</strong><div class=\"small\">" + finishLabel(entry.finish) + "</div></td>" +
+            "<td><select data-holder=\"" + entry.team.id + "\" " + (locked ? "disabled" : "") + ">" + holderOptions + "</select></td>" +
+            "<td class=\"num\">" + formatInt(entry.baseIndex) + "</td>" +
+            "<td class=\"num\">" + formatInt(entry.drawTickets) + "</td>" +
+            "<td class=\"num\">" + odds.toFixed(2) + "%</td>" +
+            "<td><input type=\"checkbox\" data-optout=\"" + entry.team.id + "\" " + (entry.optOut ? "checked" : "") + " " + (locked ? "disabled" : "") + "></td>" +
+            "<td><input type=\"checkbox\" data-traded=\"" + entry.team.id + "\" " + (entry.traded ? "checked" : "") + " " + (locked ? "disabled" : "") + "></td>" +
+          "</tr>";
+        }).join("");
+        el.lotteryConfigBody.querySelectorAll("[data-holder]").forEach(function (select) {
+          select.addEventListener("change", function () {
+            var team = findTeam(select.dataset.holder);
+            if (team) {
+              team.currentPickHolderId = select.value || team.id;
+              team.tradedPick = team.currentPickHolderId !== team.id;
+              state.lottery.results = [];
+              state.lottery.completed = false;
+              saveState();
+              renderAll();
+            }
+          });
+        });
+        el.lotteryConfigBody.querySelectorAll("[data-optout]").forEach(function (box) {
+          box.addEventListener("change", function () {
+            setOptOut(state, box.dataset.optout, box.checked);
+            state.lottery.results = [];
+            state.lottery.completed = false;
+            saveState();
+            renderAll();
+          });
+        });
+        el.lotteryConfigBody.querySelectorAll("[data-traded]").forEach(function (box) {
+          box.addEventListener("change", function () {
+            var team = findTeam(box.dataset.traded);
+            if (team) {
+              team.tradedPick = box.checked;
+              if (!box.checked) team.currentPickHolderId = team.id;
+              state.lottery.results = [];
+              state.lottery.completed = false;
+              saveState();
+              renderAll();
+            }
+          });
+        });
+        renderLotteryBoard(entries);
+      }
+
+      function renderLotteryBoard(entries) {
+        var results = state.lottery.results || [];
+        var cards = [];
+        for (var i = 1; i <= 16; i += 1) {
+          var result = results.find(function (r) { return r.pick === i; });
+          cards.push("<div class=\"pick-card\" data-pick-card=\"" + i + "\">" +
+            "<div class=\"pick-number\">Pick " + i + "</div>" +
+            "<div class=\"pick-team\">" + (result ? escapeHtml(result.holderName) : "Pending") + "</div>" +
+            "<div class=\"small\">" + (result ? "Original: " + escapeHtml(result.originalName) + " | Index: " + formatInt(result.indexUsed) : (i <= 4 ? "Weighted draw" : "Index rank")) + "</div>" +
+          "</div>");
+        }
+        el.lotteryBoard.innerHTML = cards.join("");
+      }
+
+      function resetLottery() {
+        if (!confirm("Reset the current lottery draw results?")) return;
+        state.lottery.results = [];
+        state.lottery.completed = false;
+        saveState("Lottery reset.");
+        renderAll();
+      }
+
+      function setOptOut(appState, teamId, checked) {
+        appState.lottery.optOuts = appState.lottery.optOuts || {};
+        appState.lottery.optOutPenalties = appState.lottery.optOutPenalties || {};
+        var team = findTeamIn(appState, teamId);
+        if (!team) return;
+        if (checked) {
+          if (!appState.lottery.optOuts[teamId]) {
+            var deduction = Math.min(OPT_OUT_COST, Math.max(0, toInt(team.index, 0)));
+            team.index = Math.max(0, toInt(team.index, 0) - deduction);
+            appState.lottery.optOutPenalties[teamId] = (appState.lottery.optOutPenalties[teamId] || 0) + deduction;
+          }
+          appState.lottery.optOuts[teamId] = true;
+        } else {
+          if (appState.lottery.optOuts[teamId] && !appState.lottery.completed) {
+            team.index = Math.max(0, toInt(team.index, 0) + (appState.lottery.optOutPenalties[teamId] || 0));
+            delete appState.lottery.optOutPenalties[teamId];
+          }
+          delete appState.lottery.optOuts[teamId];
+        }
+      }
+
+      async function runLotteryAnimation() {
+        if (drawing) return;
+        if (state.lottery.completed && !confirm("Lottery has already been run. Run it again and replace results?")) return;
+        drawing = true;
+        byId("runLotteryBtn").disabled = true;
+        state.lottery.results = [];
+        state.lottery.completed = false;
+        saveState();
+        renderAll();
+        var entries = buildLotteryEntries(state, { applyOptOuts: true });
+        var topFour = drawLottery(entries, Math.random).topFour;
+        for (var i = 0; i < topFour.length; i += 1) {
+          var card = document.querySelector("[data-pick-card=\"" + (i + 1) + "\"]");
+          if (card) card.classList.add("revealing");
+          await delay(700);
+          state.lottery.results.push(resultFromEntry(topFour[i], i + 1));
+          saveState();
+          renderLotteryBoard(entries);
+        }
+        state.lottery.results = completeDraftOrder(entries, state.lottery.results);
+        applyLotteryResults(state, state.lottery.results);
+        state.lottery.completed = true;
+        state.draftSeason.topPicks = state.lottery.results.slice(0, 4).map(function (r) { return r.originalTeamId; });
+        saveState("Lottery completed and top-four diminishments applied.");
+        drawing = false;
+        byId("runLotteryBtn").disabled = false;
+        renderAll();
+      }
+
+      function delay(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      function buildLotteryEntries(appState, options) {
+        options = options || {};
+        var season = appState.draftSeason || { survey: 1, finishes: buildDefaultFinishes() };
+        var rule = surveyRule(season.survey);
+        return appState.teams.map(function (team) {
+          var finish = season.finishes[team.id] || "missed";
+          var lotteryEligible = finishOrder(finish) <= rule.minOrder;
+          var optOut = !!(appState.lottery && appState.lottery.optOuts && appState.lottery.optOuts[team.id]);
+          var traded = !!team.tradedPick;
+          var holder = findTeamIn(appState, team.currentPickHolderId) || team;
+          var baseIndex = Math.max(0, toInt(team.index, 0));
+          var effectiveIndex = baseIndex;
+          return {
+            team: team,
+            holder: holder,
+            holderId: holder.id,
+            finish: finish,
+            lotteryEligible: lotteryEligible,
+            optOut: optOut,
+            traded: traded,
+            baseIndex: baseIndex,
+            effectiveIndex: effectiveIndex,
+            drawTickets: lotteryEligible && !optOut && !traded ? effectiveIndex : 0,
+            drawEligible: lotteryEligible && !optOut && !traded && effectiveIndex > 0
+          };
+        }).filter(function (entry) { return entry.lotteryEligible; })
+          .sort(function (a, b) { return b.effectiveIndex - a.effectiveIndex || a.team.name.localeCompare(b.team.name); });
+      }
+
+      function drawLottery(entries, rng) {
+        rng = rng || Math.random;
+        var pool = entries.filter(function (e) { return e.drawEligible; }).map(cloneEntry);
+        var topFour = [];
+        for (var pick = 1; pick <= 4; pick += 1) {
+          var total = pool.reduce(function (sum, e) { return sum + e.drawTickets; }, 0);
+          if (total <= 0) break;
+          var target = rng() * total;
+          var running = 0;
+          var selectedIndex = 0;
+          for (var i = 0; i < pool.length; i += 1) {
+            running += pool[i].drawTickets;
+            if (target < running) {
+              selectedIndex = i;
+              break;
+            }
+          }
+          topFour.push(pool[selectedIndex]);
+          pool.splice(selectedIndex, 1);
+        }
+        return { topFour: topFour };
+      }
+
+      function cloneEntry(entry) {
+        return Object.assign({}, entry);
+      }
+
+      function resultFromEntry(entry, pick) {
+        return {
+          pick: pick,
+          originalTeamId: entry.team.id,
+          originalName: entry.team.name || entry.team.id,
+          holderTeamId: entry.holder.id,
+          holderName: entry.holder.name || entry.holder.id,
+          indexUsed: entry.effectiveIndex,
+          traded: entry.traded
+        };
+      }
+
+      function completeDraftOrder(entries, currentResults) {
+        var results = currentResults.slice(0, 4);
+        var winnerIds = {};
+        results.forEach(function (r) { winnerIds[r.originalTeamId] = true; });
+        entries.filter(function (entry) { return !winnerIds[entry.team.id]; })
+          .sort(function (a, b) { return b.effectiveIndex - a.effectiveIndex || a.team.name.localeCompare(b.team.name); })
+          .slice(0, Math.max(0, 16 - results.length))
+          .forEach(function (entry) {
+            results.push(resultFromEntry(entry, results.length + 1));
+          });
+        return results;
+      }
+
+      function applyLotteryResults(appState, results) {
+        var rates = { 1: 0, 2: 0.25, 3: 0.5, 4: 0.75 };
+        results.slice(0, 4).forEach(function (result) {
+          var team = findTeamIn(appState, result.originalTeamId);
+          if (!team) return;
+          if (rates.hasOwnProperty(result.pick)) {
+            team.index = Math.round(Math.max(0, toInt(team.index, 0)) * rates[result.pick]);
+            team.topPicks.push({ season: appState.currentSeason, pick: result.pick });
+          }
+        });
+      }
+
+      function computeIndexesFromSeasons(teams, seasons) {
+        var indexes = {};
+        teams.forEach(function (team) { indexes[team.id] = 0; });
+        seasons.forEach(function (season) {
+          season = normalizeSeasonForCompute(season, teams);
+          teams.forEach(function (team) {
+            indexes[team.id] = computeSeasonIndex(indexes[team.id] || 0, team.id, season);
+          });
+          season.topPicks.forEach(function (teamId, i) {
+            if (!teamId || indexes[teamId] == null) return;
+            indexes[teamId] = diminishForPick(indexes[teamId], i + 1);
+          });
+        });
+        return indexes;
+      }
+
+      function normalizeSeasonForCompute(season, teams) {
+        var copy = clone(season);
+        copy.finishes = copy.finishes || {};
+        copy.topPicks = Array.isArray(copy.topPicks) ? copy.topPicks : [];
+        copy.survey = toInt(copy.survey, 1);
+        teams.forEach(function (team) {
+          if (!copy.finishes[team.id]) copy.finishes[team.id] = "missed";
+        });
+        return copy;
+      }
+
+      function computeSeasonIndex(currentIndex, teamId, season) {
+        var rule = surveyRule(season.survey);
+        var finish = season.finishes[teamId] || "missed";
+        var order = finishOrder(finish);
+        var inLotteryLine = order <= rule.minOrder;
+        var next = Math.max(0, toInt(currentIndex, 0));
+        if (inLotteryLine) {
+          if (rule.increment) next += INCREMENT;
+          return next;
+        }
+        return diminishForPlayoff(next, finish);
+      }
+
+      function diminishForPick(index, pick) {
+        var rate = { 1: 0, 2: 0.25, 3: 0.5, 4: 0.75 }[pick];
+        return Math.round(Math.max(0, toInt(index, 0)) * (rate == null ? 1 : rate));
+      }
+
+      function diminishForPlayoff(index, finish) {
+        var rate = { champion: 0, finals: 0.25, conf: 0.5, second: 0.75, first: 1, missed: 1 }[finish];
+        return Math.round(Math.max(0, toInt(index, 0)) * (rate == null ? 1 : rate));
+      }
+
+      function surveyRule(value) {
+        return SURVEY_OPTIONS.find(function (option) { return option.value === toInt(value, 1); }) || SURVEY_OPTIONS[0];
+      }
+
+      function finishOrder(finish) {
+        var found = FINISHES.find(function (f) { return f.value === finish; });
+        return found ? found.order : 0;
+      }
+
+      function finishLabel(value) {
+        var found = FINISHES.find(function (f) { return f.value === value; });
+        return found ? found.label : value;
+      }
+
+      function countPlayoffTeams(season) {
+        return Object.keys(season.finishes || {}).filter(function (teamId) {
+          return finishOrder(season.finishes[teamId]) > 0;
+        }).length;
+      }
+
+      function buildDefaultFinishes() {
+        var finishes = {};
+        state.teams.forEach(function (team) { finishes[team.id] = "missed"; });
+        return finishes;
+      }
+
+      function finishRowsHtml(finishes, context) {
+        return state.teams.map(function (team) {
+          return "<div class=\"finish-row\"><div><strong>" + teamLabel(team) + "</strong><div class=\"small\">" + escapeHtml(team.division || "No division") + "</div></div>" +
+            "<div><label>Finish</label><select data-context=\"" + context + "\" data-finish-team=\"" + team.id + "\">" + finishOptionsHtml(finishes[team.id] || "missed") + "</select></div></div>";
+        }).join("");
+      }
+
+      function bindFinishInputs(root, finishes, callback) {
+        root.querySelectorAll("[data-finish-team]").forEach(function (select) {
+          select.addEventListener("change", function () {
+            finishes[select.dataset.finishTeam] = select.value;
+            callback();
+          });
+        });
+      }
+
+      function finishOptionsHtml(selected) {
+        return FINISHES.map(function (finish) {
+          return "<option value=\"" + finish.value + "\" " + (finish.value === selected ? "selected" : "") + ">" + finish.label + "</option>";
+        }).join("");
+      }
+
+      function surveyOptionsHtml(selected) {
+        return SURVEY_OPTIONS.map(function (option) {
+          return "<option value=\"" + option.value + "\" " + (option.value === toInt(selected, 1) ? "selected" : "") + ">" + option.label + "</option>";
+        }).join("");
+      }
+
+      function teamOptionsHtml(selected) {
+        return "<option value=\"\">None</option>" + state.teams.map(function (team) {
+          return "<option value=\"" + team.id + "\" " + (team.id === selected ? "selected" : "") + ">" + teamLabel(team) + "</option>";
+        }).join("");
+      }
+
+      function findTeam(id) {
+        return findTeamIn(state, id);
+      }
+
+      function findTeamIn(appState, id) {
+        return appState.teams.find(function (team) { return team.id === id; });
+      }
+
+      function teamLabel(team) {
+        return escapeHtml(team.name || team.id);
+      }
+
+      function renderLeagueTable() {
+        var entries = buildLotteryEntries(state, { applyOptOuts: true });
+        var total = entries.filter(function (e) { return e.drawEligible; }).reduce(function (sum, e) { return sum + e.drawTickets; }, 0);
+        var rows = state.teams.map(function (team) {
+          var entry = entries.find(function (e) { return e.team.id === team.id; });
+          var holder = findTeam(team.currentPickHolderId) || team;
+          var odds = entry && entry.drawEligible && total > 0 ? entry.drawTickets / total : 0;
+          var last = (team.history || []).slice(-1)[0];
+          return {
+            team: team,
+            name: team.name || team.id,
+            division: team.division || "",
+            index: toInt(team.index, 0),
+            odds: odds,
+            playoffs: (team.history || []).length,
+            topPicks: (team.topPicks || []).length,
+            holder: holder.name || holder.id,
+            lastFinish: last ? finishLabel(last.finish) + " S" + last.season : "None"
+          };
+        });
+        rows.sort(function (a, b) {
+          var av = a[tableSort.key];
+          var bv = b[tableSort.key];
+          if (typeof av === "number" && typeof bv === "number") return tableSort.dir === "asc" ? av - bv : bv - av;
+          return tableSort.dir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+        });
+        el.leagueTableBody.innerHTML = rows.map(function (row) {
+          return "<tr>" +
+            "<td><strong>" + escapeHtml(row.name) + "</strong></td>" +
+            "<td>" + escapeHtml(row.division || "-") + "</td>" +
+            "<td class=\"num\">" + formatInt(row.index) + "</td>" +
+            "<td class=\"num\">" + (row.odds * 100).toFixed(2) + "%</td>" +
+            "<td class=\"num\">" + row.playoffs + "</td>" +
+            "<td class=\"num\">" + row.topPicks + "</td>" +
+            "<td>" + escapeHtml(row.holder) + (row.holder !== row.name ? " <span class=\"badge blue\">traded</span>" : "") + "</td>" +
+            "<td>" + escapeHtml(row.lastFinish) + "</td>" +
+          "</tr>";
+        }).join("");
+      }
+
+      function sortTable(event) {
+        var th = event.target.closest("th[data-sort]");
+        if (!th) return;
+        var key = th.dataset.sort;
+        if (tableSort.key === key) tableSort.dir = tableSort.dir === "asc" ? "desc" : "asc";
+        else tableSort = { key: key, dir: key === "name" ? "asc" : "desc" };
+        renderLeagueTable();
+      }
+
+      function exportJson() {
+        var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "cola-commissioner-season-" + state.currentSeason + ".json";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        toast("Backup exported.");
+      }
+
+      function importJson(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var imported = normalizeState(JSON.parse(reader.result));
+            if (!Array.isArray(imported.teams) || imported.teams.length !== TEAM_COUNT) throw new Error("Expected 32 teams.");
+            if (!confirm("Import this JSON backup and replace the current browser state?")) return;
+            state = imported;
+            saveState("Backup imported.");
+            ensureSetupRows();
+            renderAll();
+          } catch (err) {
+            alert("Could not import JSON: " + err.message);
+          } finally {
+            event.target.value = "";
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function resetApp() {
+        if (!confirm("Reset all COLA data in this browser? Export a backup first if you need it.")) return;
+        state = makeDefaultState();
+        localStorage.removeItem(STORAGE_KEY);
+        activeHistorySeason = 0;
+        saveState("App reset.");
+        renderAll();
+      }
+
+      function runDevTests() {
+        var testState = makeDefaultState();
+        testState.teams = testState.teams.map(function (team, i) {
+          team.name = "T" + (i + 1);
+          team.index = (TEAM_COUNT - i) * 100;
+          return team;
+        });
+        testState.draftSeason.finishes = buildFinishesForTest(testState);
+        testState.draftSeason.survey = 1;
+        var season = clone(testState.draftSeason);
+        var missedId = testState.teams[20].id;
+        var champId = testState.teams[0].id;
+        assert(computeSeasonIndex(0, missedId, season) === 1000, "non-playoff increment");
+        assert(computeSeasonIndex(4000, champId, season) === 0, "champion reset");
+        assert(diminishForPick(4000, 2) === 1000, "pick 2 diminishment");
+        testState.teams[20].tradedPick = true;
+        testState.teams[20].currentPickHolderId = testState.teams[0].id;
+        var entries = buildLotteryEntries(testState, { applyOptOuts: true });
+        var traded = entries.find(function (e) { return e.team.id === testState.teams[20].id; });
+        assert(traded.drawEligible === false, "traded pick excluded from top four draw");
+        setOptOut(testState, testState.teams[21].id, true);
+        var opted = buildLotteryEntries(testState, { applyOptOuts: true }).find(function (e) { return e.team.id === testState.teams[21].id; });
+        assert(opted.effectiveIndex === Math.max(0, ((TEAM_COUNT - 21) * 100) - OPT_OUT_COST), "opt out penalty");
+        setOptOut(testState, testState.teams[21].id, false);
+        testState.draftSeason.survey = 3;
+        var rule = surveyRule(testState.draftSeason.survey);
+        assert(rule.increment === false && rule.minOrder === 2, "strong class option 3");
+        console.info("COLA_TESTS passed");
+        return true;
+      }
+
+      function buildFinishesForTest(testState) {
+        var finishes = {};
+        testState.teams.forEach(function (team, i) {
+          finishes[team.id] = i === 0 ? "champion" : i < 16 ? "first" : "missed";
+        });
+        return finishes;
+      }
+
+      function assert(condition, message) {
+        if (!condition) throw new Error("COLA test failed: " + message);
+      }
+
+      function formatInt(value) {
+        return Math.max(0, toInt(value, 0)).toLocaleString();
+      }
+
+      function toInt(value, fallback) {
+        var n = parseInt(value, 10);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function toast(message) {
+        el.toast.textContent = message;
+        el.toast.classList.add("show");
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(function () { el.toast.classList.remove("show"); }, 2600);
+      }
+    })();
+  </script>
+</body>
+</html>
